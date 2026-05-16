@@ -1,52 +1,41 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
+import openai
 import requests
-import os
-from openai import OpenAI
 
 app = Flask(__name__)
 
-NEWS_API_KEY = os.getenv("NEWS_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai.api_key = "ใส่ API KEY ตรงนี้"
 
-client = OpenAI(api_key=OPENAI_API_KEY)
-
-def get_news():
-    url = "https://newsapi.org/v2/top-headlines"
-    params = {
-        "category": "business",
-        "language": "en",
-        "apiKey": NEWS_API_KEY,
-        "pageSize": 5
-    }
-    return requests.get(url, params=params).json()
-
-def analyze(text):
-    prompt = f"""
-วิเคราะห์ข่าวนี้สำหรับนักลงทุนและตอบเป็นภาษาไทย:
-{text}
-
-ตอบเป็นหัวข้อ:
-- สรุปข่าว
-- ผลกระทบระยะสั้น
-- ผลกระทบระยะยาว
-- หุ้นที่ได้ประโยชน์
-- หุ้นที่เสียประโยชน์
-- Market Sentiment
-"""
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role":"user","content":prompt}]
-    )
-    return response.choices[0].message.content
+NEWS_API = "https://newsapi.org/v2/top-headlines?category=business&language=en&apiKey=bcf41776a1fe4fa68397dca719525c45"
 
 @app.route("/")
 def home():
-    news = get_news()
-    results = []
-    for article in news["articles"]:
-        analysis = analyze(article["title"] + article["description"])
-        results.append({
-            "title": article["title"],
-            "analysis": analysis
-        })
-    return jsonify(results)
+    return render_template("index.html")
+
+@app.route("/news")
+def get_news():
+    news = requests.get(NEWS_API).json()
+    articles = news["articles"][:5]
+
+    text = ""
+    for a in articles:
+        text += a["title"] + "\n" + a["description"] + "\n\n"
+
+    prompt = f"""
+แปลข่าวและวิเคราะห์:
+- สรุปข่าวเป็นภาษาไทย
+- ใครได้ประโยชน์ (หุ้น/ประเทศ)
+- ใครเสียประโยชน์ (หุ้น/ประเทศ)
+
+ข่าว:
+{text}
+"""
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-mini",
+        messages=[{"role":"user","content":prompt}]
+    )
+
+    return jsonify({"result": response.choices[0].message.content})
+
+app.run(host="0.0.0.0", port=10000)
