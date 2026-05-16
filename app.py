@@ -4,7 +4,7 @@ import requests
 
 app = Flask(__name__)
 
-openai.api_key = "ใส่ API KEY ตรงนี้"
+openai.api_key = "OPENAI_API_KEY"
 
 NEWS_API = "https://newsapi.org/v2/top-headlines?category=business&language=en&apiKey=bcf41776a1fe4fa68397dca719525c45"
 
