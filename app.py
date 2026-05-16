@@ -1,12 +1,15 @@
 from flask import Flask, jsonify, render_template
 import openai
 import requests
+import os
 
 app = Flask(__name__)
 
-openai.api_key = "OPENAI_API_KEY"
+# ดึง API KEY จาก Environment Variables
+openai.api_key = os.getenv("OPENAI_API_KEY")
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
-NEWS_API = "https://newsapi.org/v2/top-headlines?category=business&language=en&apiKey=bcf41776a1fe4fa68397dca719525c45"
+NEWS_API = f"https://newsapi.org/v2/top-headlines?category=business&language=en&apiKey={NEWS_API_KEY}"
 
 @app.route("/")
 def home():
@@ -19,7 +22,7 @@ def get_news():
 
     text = ""
     for a in articles:
-        text += a["title"] + "\n" + a["description"] + "\n\n"
+        text += a["title"] + "\n" + str(a["description"]) + "\n\n"
 
     prompt = f"""
 แปลข่าวและวิเคราะห์:
@@ -38,4 +41,7 @@ def get_news():
 
     return jsonify({"result": response.choices[0].message.content})
 
-app.run(host="0.0.0.0", port=10000)
+# สำคัญมากสำหรับ Render
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
