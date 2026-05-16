@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WAR MARKET AI</title>
+
+<style>
+body{
+  background:#0b0f1a;
+  font-family:Arial;
+  color:white;
+  text-align:center;
+  padding:40px;
+}
+h1{
+  font-size:28px;
+  color:#00ffd5;
+}
+button{
+  background:#00ffd5;
+  border:none;
+  padding:15px 25px;
+  border-radius:10px;
+  font-size:18px;
+  margin-top:20px;
+}
+.card{
+  background:#111827;
+  padding:20px;
+  margin-top:30px;
+  border-radius:15px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>WAR MARKET AI</h1>
+<p>ข่าวโลก + วิเคราะห์หุ้น + แปลไทย</p>
+
+<button onclick="loadNews()">โหลดข่าวล่าสุด</button>
+
+<div id="news"></div>
+
+<script>
+async function loadNews(){
+  document.getElementById("news").innerHTML="กำลังโหลดข่าว...";
+  const res = await fetch('/news');
+  const data = await res.json();
+  document.getElementById("news").innerHTML=
+    "<div class='card'><pre>"+data.result+"</pre></div>";
+}
+</script>
+
+</body>
+</html>
